@@ -1,0 +1,33 @@
+name: Pipeline de Automação e Validação de Rede
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  executar-automacao:
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalar Dependências
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Executar Orquestrador de Rede
+        env:
+          FORTIGATE_TOKEN: ${{ secrets.FORTIGATE_TOKEN }}
+          PALO_ALTO_PASS: ${{ secrets.PALO_ALTO_PASS }}
+        run: |
+          python orchestrator.py
